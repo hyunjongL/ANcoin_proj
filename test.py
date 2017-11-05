@@ -5,11 +5,11 @@ import string
 
 def do_test(input_text, key_json, payload_correct_json, payload_wrong_json):
     print('\nTest Start')
-    #Writes Signature, Payload file
+    # Writes Signature, Payload file
     os.system("python3 sig.py -p " + key_json + " < " + input_text)
     os.system("python3 sig.py -s " + key_json + " < " + input_text)
 
-    #Verifies a wrong payload and a correct json
+    # Verifies a wrong payload and a correct json
     print('Test verifying correct payload.json')
     os.system("python3 sig.py -v " + payload_correct_json)
     with open('verify') as verify:
@@ -48,14 +48,16 @@ def do_test(input_text, key_json, payload_correct_json, payload_wrong_json):
         os.system("python3 sig.py -v payload.json")
         with open('verify') as verify:
             l = verify.readline()
-            print('\t' + random_string, end = '\t')
+            print('\t' + random_string, end='\t')
             if l == 'True':
                 print('Pass!')
                 counter += 1
             else:
                 print('Not Pass!')
             verify.close()
-    print('\t\t\t\t\tPassed %d tests out of 10' %(counter))
+    print('\t\t\t\t\tPassed %d tests out of 10' % (counter))
+
+
 if len(sys.argv) != 1:
     print('Testing with following inputs')
     print('Input Text:              ' + sys.argv[1])
