@@ -2,6 +2,7 @@ import requests
 import json
 import sig
 import types
+import sys
 
 
 # Make a list for the Blockchain
@@ -22,9 +23,10 @@ def find_parent(hash, chain):
 # input: string hash, list chain
 # Find the index where chain[index].hash == hash
 def find_hash(hash, chain):
+    hash = int(hash, 16)
     end = len(chain)
     for i in range(end):
-        if chain[end-1-i].hash == hash:
+        if int(chain[end-1-i].hash, 16) == hash:
             return end-i-1
     return -1
 
@@ -37,7 +39,8 @@ def traverse_chain(num, chain):
     node = chain[num]
     while(node.parent != -1):
         if node.transaction_num > 0:
-            print (node.transaction[0]['transaction']['from'])
+            transaction_json = json.loads(node.transaction[0]['transaction'])
+            print (transaction_json['to'], transaction_json['from'])
         node = node.parent
 
 
@@ -45,7 +48,7 @@ def traverse_chain(num, chain):
 # Calculated the balance of all users till the given node.
 def calcuate_balance(node, chain):
     balance = {}
-    while(node.parent != -1):
+    while(node != -1):
         if node.transaction_num > 0:
             for i in range(node.transaction_num):
                 transaction_json = json.loads(node.transaction[i]['transaction'])
@@ -53,17 +56,17 @@ def calcuate_balance(node, chain):
                 from_key = transaction_json['from']
                 amount = transaction_json['amount']
                 if to_key in balance:
-                    balance[to_key] += amount
+                    balance[to_key] += int(amount, 16)
                 else:
-                    balance[to_key] = amount
+                    balance[to_key] = int(amount, 16)
                 if from_key in balance:
-                    balance[from_key] -= amount
+                    balance[from_key] -= int(amount, 16) + 50
                 else:
-                    balance[from_key] = 0 - amount
+                    balance[from_key] = 0 - int(amount, 16) - 50
         if node.reward in balance:
-            balance[node.reward] += 1000
+            balance[node.reward] += 1000 + node.transaction_num * 50
         else:
-            balance[node.reward] = 1000
+            balance[node.reward] = 1000 + node.transaction_num * 50
         node = node.parent
     return balance
 
@@ -143,23 +146,36 @@ def block_verify(block):
         return verify_transaction(block, hash_512)
 
 
-if __name__ == "__main__":
-    # block_chain_size = get_Size()
-    # print(block_chain_size)
-    counter = 0
+def create_chain_till_hash(hash):
+    blockchain = list()
+    thousand_cnt = 0
     get_length = 1000
-    index_counter = 0
-    blockchain = blockchain_init()
     while(get_length == 1000):
         res = requests.get('http://gw.kaist.ac.kr/broadcast/get?start_at='
-                           + str(1000 * index_counter))
+                           + str(1000 * thousand_cnt))
         block_json = res.json()
         get_length = len(block_json)
         for i in range(get_length):
             if not block_verify(block_json[i]):
-                counter += 1
+                # counter += 1
+                pass
             else:
                 block_node(block_json[i], blockchain)
-        index_counter += 1
+                if ('hash' in block_json[i] and block_json[i]['hash'] == hash):
+                    return blockchain
+        thousand_cnt += 1
+    # No Hash found
+    return -1
+
+
+if __name__ == "__main__":
+    hash_ = sys.argv[1]
+    # hash_ = "00000000e68a9542026c1c170da06ffcc4fbb83f41911b3676f263a6ff66aafdc31793be9e631e3540a2686aa5ad891b78745b13446fbb66a77b11bad3d50635"
+    blockchain = create_chain_till_hash(hash_)
+    # length_ = len(blockchain)
     # print(blockchain)
-    traverse_chain(300, blockchain)
+    # traverse_chain(300, blockchain)
+    if blockchain == -1:
+        print('Error! No such hash found')
+        exit()
+    print(json.dumps(calcuate_balance(blockchain[-1], blockchain)))

@@ -82,14 +82,14 @@ def verify(pk, msg, sig, hash_512):
         return False
 
 
-if __name__ == '__main__':
+def run_sig(args):
     hash_512 = hash_init()
     option = None
-    if len(sys.argv) == 3:
+    if len(args) == 3:
         # option -s : sign a message(given input) with given key.
-        if sys.argv[1] == '-s':
+        if args[1] == '-s':
             # parse the json
-            payload = parse(sys.argv[2])
+            payload = parse(args[2])
             # check if the json is what we need
             if not(check_dict_keys(payload,
                    ('publicExponent', 'modulus', 'privateExponent'))):
@@ -106,8 +106,8 @@ if __name__ == '__main__':
                 outfile.write(signature)
                 outfile.close()
         # option -p : make a payload with given input.
-        elif sys.argv[1] == '-p':
-            payload = parse(sys.argv[2])
+        elif args[1] == '-p':
+            payload = parse(args[2])
             if not(check_dict_keys(payload, ('publicExponent', 'modulus',
                                              'privateExponent'))):
                 print('Wrong input file: The json file has wrong arguments')
@@ -128,8 +128,8 @@ if __name__ == '__main__':
                 }
             with open('payload.json', 'w') as outfile:
                 json.dump(result, outfile)
-        elif sys.argv[1] == '-v':
-            payload = parse(sys.argv[2])
+        elif args[1] == '-v':
+            payload = parse(args[2])
 
             if not(check_dict_keys(payload, ('message', 'sig'))):
                 print('Wrong input file: The json file has wrong arguments')
@@ -159,7 +159,7 @@ if __name__ == '__main__':
             print('-p : To get the signed payload file')
             print('-v : To verity a payload\n')
             print('e.g. python3 THISCODE.py -s dir/key.json < input.txt')
-    elif sys.argv[1] == '-h' or sys.argv[1] == '--help':
+    elif args[1] == '-h' or args[1] == '--help':
         print('python3 THISCODE.py [option] [json file] ([< INPUTFILE])')
         print('-s : To get the signature file')
         print('-p : To get the signed payload file')
@@ -172,3 +172,7 @@ if __name__ == '__main__':
         print('-p : To get the signed payload file')
         print('-v : To verity a payload\n')
         print('e.g. python3 THISCODE.py -s dir/key.json < input.txt')
+
+
+if __name__ == '__main__':
+    run_sig(sys.argv)
