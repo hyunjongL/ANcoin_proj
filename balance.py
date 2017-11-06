@@ -5,11 +5,6 @@ import types
 import sys
 
 
-# Make a list for the Blockchain
-def blockchain_init():
-    return list()
-
-
 # input: string hash, list chain
 # Find a node with node.hash == hash
 def find_parent(hash, chain):
@@ -71,6 +66,8 @@ def calcuate_balance(node, chain):
     return balance
 
 
+# A node for linked list.
+# It carries its parent node.
 class block_node:
 
     def __init__(self, block, chain):
@@ -82,13 +79,15 @@ class block_node:
                      block_json['parent'], chain)
 
     # input: String Reward, String Hash, String Transaction, List Chain
+    # It fills out the node with needed information and enchains it to the
+    # given blockchain.
     def enchain(self, reward, hash, transaction, parent, chain):
         self.hash = hash
         self.reward = reward
         # this loads a list of transaction blocks
         # to access a transaction,
-        # json.loads(transaction[i]['transaction'])['from']
-        # json.loads(transaction[i]['transaction'])['to']
+        # json.loads( transaction[i]['transaction'] )['from']
+        # json.loads( transaction[i]['transaction'] )['to']
         self.transaction = transaction
         self.transaction_num = len(self.transaction)
         self.parent = find_parent(parent, chain)
@@ -99,7 +98,7 @@ class block_node:
         return self.hash
 
 
-# Get the Size
+# Get the Size of the blockchain
 def get_Size():
     curr_index = 1
     total_length = 0
@@ -169,13 +168,19 @@ def create_chain_till_hash(hash):
 
 
 if __name__ == "__main__":
-    hash_ = sys.argv[1]
-    # hash_ = "00000000e68a9542026c1c170da06ffcc4fbb83f41911b3676f263a6ff66aafdc31793be9e631e3540a2686aa5ad891b78745b13446fbb66a77b11bad3d50635"
-    blockchain = create_chain_till_hash(hash_)
-    # length_ = len(blockchain)
-    # print(blockchain)
-    # traverse_chain(300, blockchain)
-    if blockchain == -1:
-        print('Error! No such hash found')
-        exit()
-    print(json.dumps(calcuate_balance(blockchain[-1], blockchain)))
+    if sys.argv[1] == '-h':
+        hash_ = sys.argv[2]
+        # example hash below
+        # hash_ = "00000000e68a9542026c1c170da06ffcc4fbb83f41911b3676f263a6ff66aafdc31793be9e631e3540a2686aa5ad891b78745b13446fbb66a77b11bad3d50635"
+        blockchain = create_chain_till_hash(hash_)
+        # length_ = len(blockchain)
+        # print(blockchain)
+        # traverse_chain(300, blockchain)
+        if blockchain == -1:
+            print('Error! No such hash found')
+            exit()
+        print(json.dumps(calcuate_balance(blockchain[-1], blockchain)))
+    else:
+        print("Need Option!")
+        print("python3 balance.py -h [BLOCKHASH] > balance.json")
+        print("To get the balance upto the given hash.")
