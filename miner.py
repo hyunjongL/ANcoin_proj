@@ -26,12 +26,14 @@ def findnonce(block, init, diff, dd):
         block['timestamp'] = str(datetime.datetime.utcnow())
         hash512.update(str.encode(json.dumps(block)))
         print('\r' + hash512.hexdigest()[:10],'\t\t' , nonce, end='')
-        if int(hash512.hexdigest(), 16) < 2 ** (492 - dd):
-            print(hash512.hexdigest())
-            my_block = {'hash': hash512.hexdigest(), 'type': 'block_hash', 'block': json.dumps(block)}
-            r = requests.post('https://gw.kaist.ac.kr/broadcast/post', json = my_block)
-            print('done!!\n\n')
-            return True
+        if int(hash512.hexdigest(), 16) < 2 ** (492 - 4):
+            print('\r',hash512.hexdigest())
+            if int(hash512.hexdigest(), 16) < 2 ** (492 - dd):
+                print(hash512.hexdigest())
+                my_block = {'hash': hash512.hexdigest(), 'type': 'block_hash', 'block': json.dumps(block)}
+                r = requests.post('https://gw.kaist.ac.kr/broadcast/post', json = my_block)
+                print('done!!\n\n')
+                return True
         nonce += diff
 
 def findnonce_np(block, init, diff, dd):
@@ -42,21 +44,16 @@ def findnonce_np(block, init, diff, dd):
         block['timestamp'] = str(datetime.datetime.utcnow())
         hash512.update(str.encode(json.dumps(block)))
         # print('\r' + hash512.hexdigest()[:10],'\t\t' , nonce, end='')
-        if int(hash512.hexdigest(), 16) < 2 ** (492 - dd):
-            # print(hash512.hexdigest())
-            my_block = {'hash': hash512.hexdigest(), 'type': 'block_hash', 'block': json.dumps(block)}
-            r = requests.post('https://gw.kaist.ac.kr/broadcast/post', json = my_block)
-            print('done!!\n\n')
-            return True
+        if int(hash512.hexdigest(), 16) < 2 ** (492):
+            print('\r',hash512.hexdigest())
+            if int(hash512.hexdigest(), 16) < 2 ** (492 - dd):
+                # print(hash512.hexdigest())
+                my_block = {'hash': hash512.hexdigest(), 'type': 'block_hash', 'block': json.dumps(block)}
+                r = requests.post('https://gw.kaist.ac.kr/broadcast/post', json = my_block)
+                print('done!!\n\n')
+                return True
         nonce += diff
 
 # findnonce(block, 0, 1)
 
-if __name__ == '__main__':
-    t1 = threading.Thread(target=findnonce, args=(block, 0, 2, 9))
-    t2 = threading.Thread(target=findnonce_np, args=(block, 1, 2, 9))
-    # t3 = threading.Thread(target=findnonce_np, args=(block, 2, 3))
-    t1.start()
-    t2.start()
-    # t3.start()
-    print('\rStart!')
+findnonce(block, 0, 1, 9)
