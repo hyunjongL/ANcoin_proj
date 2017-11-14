@@ -134,18 +134,29 @@ def block_verify(block):
         return False
     type_ = block["type"]
     hash_512 = sig.hash_init()
-    if(type_ == 'block_hash'):
-        given_hash = int(block["hash"], 16)
-        hash_512.update(str.encode(block["block"]))
-        calculated_hash = int(hash_512.hexdigest(), 16)
-        difficulty = int(json.loads(block["block"])['difficulty'])
-        return ((given_hash == calculated_hash) and
-                (given_hash < 2 ** (512 - difficulty)))
-    elif (type_ == "transaction_sign"):
-        return verify_transaction(block, hash_512)
+    try:
+        if(type_ == 'block_hash'):
+            given_hash = int(block["hash"], 16)
+            hash_512.update(str.encode(block["block"]))
+            calculated_hash = int(hash_512.hexdigest(), 16)
+            difficulty = int(json.loads(block["block"])['difficulty'], 16)
+            return given_hash < 2 ** (512 - difficulty)
+        elif (type_ == "transaction_sign"):
+            return verify_transaction(block, hash_512)
+    except:
+        return False
 
 
-def create_chain_till_hash(hash):
+def is_valid_block(block):
+    try:
+        if block_verify(block) and block["type"] == 'block_hash':
+            return True
+    except:
+        return False
+    return False
+
+
+def create_chain_till_hash(hash_):
     blockchain = list()
     thousand_cnt = 0
     get_length = 1000
@@ -160,9 +171,11 @@ def create_chain_till_hash(hash):
                 pass
             else:
                 block_node(block_json[i], blockchain)
-                if ('hash' in block_json[i] and block_json[i]['hash'] == hash):
+                if ('hash' in block_json[i] and block_json[i]['hash'] == hash_):
+                    print("found")
                     return blockchain
         thousand_cnt += 1
+    print(thousand_cnt)
     # No Hash found
     return -1
 
@@ -171,7 +184,7 @@ if __name__ == "__main__":
     if sys.argv[1] == '-h':
         hash_ = sys.argv[2]
         # example hash below
-        # hash_ = "00000000e68a9542026c1c170da06ffcc4fbb83f41911b3676f263a6ff66aafdc31793be9e631e3540a2686aa5ad891b78745b13446fbb66a77b11bad3d50635"
+        hash_ = "00000001d2d306c76a011c35ef36f20b126845d71a65240c3266d34623e55fe0329aadd90d8ff8e33e32ac05891a3c234a770b0976fcfe302aca147bf67f89cb"
         blockchain = create_chain_till_hash(hash_)
         # length_ = len(blockchain)
         # print(blockchain)
