@@ -49,30 +49,32 @@ def build_chain():
             block = {'type': 'block', 'transactions': [], 'timestamp': str(datetime.datetime.utcnow()), 'reward': hex(key.publickey().n)[2:], 'difficulty':'9', 'nonce':'', 'parent': res[i]['hash']}
             return (block, json.loads(res[i]['block'])['difficulty'])
 
+haha = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l']
 def findnonce(block, diff):
-    nonce = 0
+    nonce = '00000000000000000000000000000000'*2
     block['difficulty'] = str(diff)
     timer = str(datetime.datetime.utcnow()).split(' ')
     block['timestamp'] = timer[0]+'T'+timer[1]
-    while(True):
-        
-        block['nonce'] = str(nonce)
-        # block['timestamp'] = str(datetime.datetime.utcnow())
-        J = json.dumps((block))
-        hash512 = SHA512.new(str.encode(J))
-        # print('\r' + hash512.hexdigest()[:10],'\t\t' , nonce, end='')
-        if int(hash512.hexdigest(), 16) < 2 ** (492 - 4):
-            print('\r',hash512.hexdigest())
-            if int(hash512.hexdigest(), 16) < 2 ** (492 - int(diff, 16)):
-                print(hash512.hexdigest())
-                my_block = {'hash': hash512.hexdigest(), 'type': 'block_hash', 'block': J}
-                r = requests.post('https://gw.kaist.ac.kr/broadcast/post', json = my_block)
-                print('done!!\n\n')
-                return nonce
-        nonce += 1
-        if nonce > 100000:
-            # print(block)
-            return nonce
+    block['nonce'] = nonce
+    J = json.dumps((block))
+    for i in haha:
+        for k in haha:
+            if i == k:
+                continue
+            for j in range(64):
+                J = J[:635 + j] + i + k + J[637 + j:]
+                # print(J[635:701])
+                hash512 = SHA512.new(str.encode(J))
+                # print('\r' + hash512.hexdigest()[:10],'\t\t' , nonce, end='')
+                if int(hash512.hexdigest(), 16) < 2 ** (492 - 4):
+                    print('\r',hash512.hexdigest())
+                    if int(hash512.hexdigest(), 16) < 2 ** (492 - int(diff, 16)):
+                        print(hash512.hexdigest())
+                        my_block = {'hash': hash512.hexdigest(), 'type': 'block_hash', 'block': J}
+                        r = requests.post('https://gw.kaist.ac.kr/broadcast/post', json = my_block)
+                        print('done!!\n\n')
+                        return nonce
+    return 0
 
 def findnonce_np(block, init, diff, dd):
     nonce = init
